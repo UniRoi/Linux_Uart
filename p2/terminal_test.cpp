@@ -1,14 +1,14 @@
-
+// #include<iostream>
 #include<stdio.h>
 #include<fcntl.h>
 #include<unistd.h>
 #include<termios.h>   // using the termios.h library
 
-int main(){
+int main(void){
    int fd, count;
 
    // Remove O_NDELAY to *wait* on serial read (blocking read)
-   if ((fd= open("/dev/ttyS0", O_RDWR | O_NOCTTY ))<0){
+   if ((fd= open("/dev/ttyS0", O_RDWR ))<0){
       perror("UART: Failed to open the file.\n");
       return -1;
    }
@@ -20,24 +20,29 @@ int main(){
    // 115200 baud, 8-N-1, enable receiver, no modem control lines
    options.c_cflag = B115200 | CS8 | CREAD | CLOCAL;
    options.c_iflag = IGNPAR | ICRNL; // ignore partity errors, convert '\r' to '\n'
+   // options.c_lflag |= ICANON;
    tcflush(fd, TCIFLUSH);            // discard file information
    tcsetattr(fd, TCSANOW, &options); // changes occur immmediately
 
-   char *transmit = "Hello Raspberry Pi!\n";  // send string
+   char transmit[100];// = "Hello Raspberry Pi!\n";  // send string
 
-   if ((count = write(fd, transmit, 22))<0){         // transmit
-      perror("Failed to write to the output\n");
+   // std::cin >> transmit;
+
+   unsigned char receive[100]; //declare a buffer for receiving data
+
+   if ((count = read(fd, (void*)receive, 100))<0)
+   {   //receive data
+      perror("Failed to read from the input\n");
       return -1;
    }
 
    usleep(100000);             // give the remote machine a chance to respond
-
-   unsigned char receive[100]; //declare a buffer for receiving data
-
-   if ((count = read(fd, (void*)receive, 100))<0){   //receive data
-      perror("Failed to read from the input\n");
+   if ((count = write(fd, receive, count))<0
+   ){         // transmit
+      perror("Failed to write to the output\n");
       return -1;
    }
+
 
    if (count==0) printf("There was no data available to read!\n");
    else printf("The following was read in [%d]: %s\n",count,receive);

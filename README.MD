@@ -37,11 +37,26 @@ Concole output:
     The following was read in [20]: Hello Raspberry Pi!
     pi@rpi-matthiasr24:~/Linux_Uart/p2 $
 
-After adding newline character to the end of the string the following output is received:
+After adding newline character to the end of the string and changing the code a bit
+
+    char *transmit = "Hello Raspberry Pi!\n";  // send string
+
+    if ((count = write(fd, transmit, 22))<0){         // transmit
+        perror("Failed to write to the output\n");
+        return -1;
+    }
+
+the following output is received:
 
     pi@rpi-matthiasr24:~/Linux_Uart/p2 $ ./uart_test 
     The following was read in [22]: Hello Raspberry Pi!
 
     pi@rpi-matthiasr24:~/Linux_Uart/p2 $
 
-A newline is printed because of the \n, I also increased the length of the write to 22 characters
+A newline is printed because of the \n.
+
+### replicating terminal
+
+
+## Part 3
+
